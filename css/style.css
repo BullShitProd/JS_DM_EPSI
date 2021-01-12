@@ -1,0 +1,54 @@
+body {
+    padding: 0; 
+    margin: 0; 
+}
+
+.background {
+    background: url('../image/background.png'); 
+    height: 100vh; 
+    width: 100%;
+    background-color: #cccccc;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: 100%; 
+}
+
+#player {
+    position: absolute;
+    top: 79%;
+}
+
+#score {
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    color: white; 
+    font-size: 2rem; 
+    font-family: Helvetica;
+}
+
+/*BALLS*/ 
+
+.ball-blue {
+    position:absolute;
+    width: 30px;  
+    height: 30px; 
+    background: blue; 
+    border-radius: 50%;
+}
+
+.ball-red {
+    position:absolute;
+    width: 30px; 
+    height: 30px; 
+    background: red; 
+    border-radius: 50%;
+}
+
+.ball-black {
+    position:absolute;
+    width: 30px; 
+    height: 30px; 
+    background: black; 
+    border-radius: 50%;
+}
