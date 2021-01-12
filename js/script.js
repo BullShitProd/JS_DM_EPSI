@@ -124,6 +124,7 @@ function DownBall() {
             elementScore.text(score);
             this.player.height = this.player.height + 10;
             playerTop = playerTop - 10;
+            player.offset({top:playerTop }); 
             console.log(playerTop);
             break;
           case "ball-blue":
@@ -135,6 +136,7 @@ function DownBall() {
               elementScore.text(score);
               this.player.height = this.player.height - 10;
               playerTop = playerTop + 10;
+              player.offset({top:playerTop });
               console.log(playerTop);
             }
 
