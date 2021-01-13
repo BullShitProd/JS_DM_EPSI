@@ -1,7 +1,7 @@
 //player
 let player = $("#player");
 let playerTop = player.position().top;
-cycleAnimationPlayer = 1; 
+cycleAnimationPlayer = 1;
 
 //windows
 let w = window.innerWidth;
@@ -22,6 +22,17 @@ let invincible = false;
 let timeInvincible = 10;
 let elementInvinsible = $("#invinsible");
 
+//sound
+let audio = new Audio("./sound/Crocrodile_instru.mp3");
+
+//gameOver
+let elementGameOver = $("#game-over");
+let elementFinalScore = $("#final-score");
+let btnGameOver = $("#btn-game-over");
+
+//intervall
+let listIntervall = [];
+
 console.log(elementScore);
 
 let typeBalls = [
@@ -39,6 +50,14 @@ moveRight();
 moveLeft();
 generateBalls();
 DownBall();
+playSound();
+
+function playSound() {
+  $(document).keypress(function (e) {
+    audio.play();
+    audio.loop = true; 
+  });
+}
 
 /**
  * Move Right player
@@ -50,7 +69,7 @@ function moveRight() {
       let coordinates = player.offset();
       let left = coordinates.left + 10;
 
-      if (w - left > player.height()) {
+      if (w - left > player.height() && !lose) {
         player.offset({ top: playerTop, left: left });
         animationPlayer();
         player.removeClass("miroir-player");
@@ -67,11 +86,10 @@ function moveLeft() {
     if (e.key == "q" || e.key == "Q") {
       let coordinates = player.offset();
       let left = coordinates.left - 10;
-
-      if (left > 0) {
+      if (left > 0 && !lose) {
         player.offset({ top: playerTop, left: left });
         animationPlayer();
-        player.addClass("miroir-player"); 
+        player.addClass("miroir-player");
       }
     }
   });
@@ -79,31 +97,33 @@ function moveLeft() {
 
 function animationPlayer() {
 
-  if(cycleAnimationPlayer === 1) {
-    player.attr('src', './image/crocro2.png'); 
+  const armor = invincible ? '_armor' : "";
+
+  if (cycleAnimationPlayer === 1) {
+    player.attr("src", `./image/crocro${armor}_2.png`);
     cycleAnimationPlayer = 2;
   } else {
-    player.attr('src', './image/crocro.png'); 
+    player.attr("src", `./image/crocro${armor}.png`);
     cycleAnimationPlayer = 1;
   }
 }
 
 function generateBalls() {
-  setInterval(function () {
-    let generateNewBall = randomInt(1, 1);
+  listIntervall.push(
+    setInterval(function () {
+      if (balls.length < 25) {
+        let randomColors = randomInt(0, 3);
 
-    if (generateNewBall == 1 && balls.length < 30) {
-      let randomColors = randomInt(0, 3);
+        let randomPositions = generalPositionBall();
 
-      let randomPositions = generalPositionBall();
+        let newBall = $(typeBalls[randomColors]);
+        $("body").append(newBall);
+        newBall.offset({ top: 0, left: randomPositions });
 
-      let newBall = $(typeBalls[randomColors]);
-      $("body").append(newBall);
-      newBall.offset({ top: 0, left: randomPositions });
-
-      balls.push(newBall);
-    }
-  }, 200);
+        balls.push(newBall);
+      }
+    }, 200)
+  );
 }
 
 function generalPositionBall() {
@@ -130,27 +150,29 @@ function generalPositionBall() {
 }
 
 function DownBall() {
-  setInterval(function () {
-    balls.forEach((element, index) => {
-      const coordinates = element.offset();
-      const top = coordinates.top + 5;
-      const left = coordinates.left;
+  listIntervall.push(
+    setInterval(function () {
+      balls.forEach((element, index) => {
+        const coordinates = element.offset();
+        const top = coordinates.top + 5;
+        const left = coordinates.left;
 
-      if (collisionBalls(element)) {
-        console.log("CRASH");
+        if (collisionBalls(element)) {
+          console.log("CRASH");
 
-        effectBall(element, index);
-      }
+          effectBall(element, index);
+        }
 
-      if (top + 30 > innerHeight) {
-        removeBall(element, index);
-        // balls.splice(index, 1);
-        // element.remove();
-      } else {
-        element.offset({ top, left });
-      }
-    });
-  }, 20);
+        if (top + 30 > innerHeight) {
+          removeBall(element, index);
+          // balls.splice(index, 1);
+          // element.remove();
+        } else {
+          element.offset({ top, left });
+        }
+      });
+    }, 20)
+  );
 }
 
 /**
@@ -198,7 +220,7 @@ function effectBall(element, index) {
       if (score == 0) {
         if (!invincible) {
           lose = true;
-          alert("Vous avez perdu");
+          gameOver();
         }
       } else {
         score--;
@@ -214,6 +236,10 @@ function effectBall(element, index) {
       if (!invincible) {
         invincible = true;
 
+        cycleAnimationPlayer === 1
+          ? player.attr("src", "./image/crocro_armor.png")
+          : player.attr("src", "./image/crocro_armor_2.png");
+
         elementInvinsible.css("display", "inline");
 
         const interval = setInterval(() => {
@@ -223,8 +249,14 @@ function effectBall(element, index) {
           }
         }, 1000);
 
+        listIntervall.push(interval);
+
         setTimeout(() => {
           elementInvinsible.css("display", "none");
+          cycleAnimationPlayer === 1
+          ? player.attr("src", "./image/crocro.png")
+          : player.attr("src", "./image/crocro_2.png");
+
           timeInvincible = 10;
           timeInvincible--;
           elementInvinsible.text(`invinsible: ${timeInvincible} sec`);
@@ -236,8 +268,8 @@ function effectBall(element, index) {
       break;
     case "ball-black":
       if (!invincible) {
+        gameOver();
         lose = true;
-        alert("Vous avez perdu !");
       }
       break;
   }
@@ -248,6 +280,25 @@ function effectBall(element, index) {
 function removeBall(ball, index) {
   balls.splice(index, 1);
   ball.remove();
+}
+
+function gameOver() {
+  lose = true;
+
+  audio.pause();
+
+  listIntervall.forEach((element) => {
+    clearInterval(element);
+  });
+
+  elementGameOver.css("display", "block");
+
+  console.log(elementFinalScore);
+  elementFinalScore.text(`Nombre de point : ${score}`);
+
+  btnGameOver.click(() => {
+    document.location.reload();
+  });
 }
 
 /**
