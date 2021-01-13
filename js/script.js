@@ -1,6 +1,7 @@
 //player
 let player = $("#player");
 let playerTop = player.position().top;
+cycleAnimationPlayer = 1; 
 
 //windows
 let w = window.innerWidth;
@@ -16,12 +17,18 @@ let elementScore = $("#score");
 //perdu
 let lose = false;
 
+//invinsible
+let invincible = false;
+let timeInvincible = 10;
+let elementInvinsible = $("#invinsible");
+
 console.log(elementScore);
 
 let typeBalls = [
   '<div class="ball-red"></div>',
   '<div class="ball-blue"></div>',
   '<div class="ball-black"></div>',
+  '<div class="ball-green"></div>',
 ];
 
 //set position player
@@ -43,8 +50,10 @@ function moveRight() {
       let coordinates = player.offset();
       let left = coordinates.left + 10;
 
-      if (w - left > 65) {
+      if (w - left > player.height()) {
         player.offset({ top: playerTop, left: left });
+        animationPlayer();
+        player.removeClass("miroir-player");
       }
     }
   });
@@ -61,17 +70,30 @@ function moveLeft() {
 
       if (left > 0) {
         player.offset({ top: playerTop, left: left });
+        animationPlayer();
+        player.addClass("miroir-player"); 
       }
     }
   });
 }
 
+function animationPlayer() {
+
+  if(cycleAnimationPlayer === 1) {
+    player.attr('src', './image/crocro2.png'); 
+    cycleAnimationPlayer = 2;
+  } else {
+    player.attr('src', './image/crocro.png'); 
+    cycleAnimationPlayer = 1;
+  }
+}
+
 function generateBalls() {
   setInterval(function () {
-    let generateNewBall = randomInt(1, 3);
+    let generateNewBall = randomInt(1, 1);
 
-    if (generateNewBall == 1 && balls.length < 15) {
-      let randomColors = randomInt(0, 2);
+    if (generateNewBall == 1 && balls.length < 30) {
+      let randomColors = randomInt(0, 3);
 
       let randomPositions = generalPositionBall();
 
@@ -116,38 +138,8 @@ function DownBall() {
 
       if (collisionBalls(element)) {
         console.log("CRASH");
-        const classBalls = $(element).attr("class");
 
-        switch (classBalls) {
-          case "ball-red":
-            score++;
-            elementScore.text(score);
-            this.player.height = this.player.height + 10;
-            playerTop = playerTop - 10;
-            player.offset({top:playerTop }); 
-            console.log(playerTop);
-            break;
-          case "ball-blue":
-            if (score == 0) {
-              lose = true;
-              alert("Vous avez perdu");
-            } else {
-              score--;
-              elementScore.text(score);
-              this.player.height = this.player.height - 10;
-              playerTop = playerTop + 10;
-              player.offset({top:playerTop });
-              console.log(playerTop);
-            }
-
-            break;
-          case "ball-black":
-            lose = true;
-            alert("Vous avez perdu !");
-            break;
-        }
-
-        removeBall(element, index);
+        effectBall(element, index);
       }
 
       if (top + 30 > innerHeight) {
@@ -189,6 +181,68 @@ function collisionBalls(balls) {
   console.log(crash);
 
   return crash;
+}
+
+function effectBall(element, index) {
+  const classBalls = $(element).attr("class");
+  switch (classBalls) {
+    case "ball-red":
+      score++;
+      elementScore.text(score);
+      this.player.height = this.player.height + 10;
+      playerTop = playerTop - 10;
+      player.offset({ top: playerTop });
+      console.log(playerTop);
+      break;
+    case "ball-blue":
+      if (score == 0) {
+        if (!invincible) {
+          lose = true;
+          alert("Vous avez perdu");
+        }
+      } else {
+        score--;
+        elementScore.text(score);
+        this.player.height = this.player.height - 10;
+        playerTop = playerTop + 10;
+        player.offset({ top: playerTop });
+        console.log(playerTop);
+      }
+
+      break;
+    case "ball-green":
+      if (!invincible) {
+        invincible = true;
+
+        elementInvinsible.css("display", "inline");
+
+        const interval = setInterval(() => {
+          if (timeInvincible !== 0) {
+            timeInvincible--;
+            elementInvinsible.text(`invinsible: ${timeInvincible} sec`);
+          }
+        }, 1000);
+
+        setTimeout(() => {
+          elementInvinsible.css("display", "none");
+          timeInvincible = 10;
+          timeInvincible--;
+          elementInvinsible.text(`invinsible: ${timeInvincible} sec`);
+          invincible = false;
+          clearInterval(interval);
+        }, 10000);
+      }
+
+      break;
+    case "ball-black":
+      if (!invincible) {
+        lose = true;
+        alert("Vous avez perdu !");
+      }
+      break;
+  }
+
+  removeBall(element, index);
 }
 
 function removeBall(ball, index) {
