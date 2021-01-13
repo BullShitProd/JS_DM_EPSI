@@ -53,7 +53,7 @@ DownBall();
 playSound();
 
 function playSound() {
-  $(document).keypress(function (e) {
+  $(document).keydown(function (e) {
     audio.play();
     audio.loop = true; 
   });
@@ -64,7 +64,7 @@ function playSound() {
  */
 function moveRight() {
   console.log("test");
-  $(document).keypress(function (e) {
+  $(document).keydown(function (e) {
     if (e.key == "d" || e.key == "D") {
       let coordinates = player.offset();
       let left = coordinates.left + 10;
@@ -222,7 +222,7 @@ function effectBall(element, index) {
           lose = true;
           gameOver();
         }
-      } else {
+      } else if(!invincible) {
         score--;
         elementScore.text(score);
         this.player.height = this.player.height - 10;
@@ -258,8 +258,6 @@ function effectBall(element, index) {
           : player.attr("src", "./image/crocro_2.png");
 
           timeInvincible = 10;
-          timeInvincible--;
-          elementInvinsible.text(`invinsible: ${timeInvincible} sec`);
           invincible = false;
           clearInterval(interval);
         }, 10000);
